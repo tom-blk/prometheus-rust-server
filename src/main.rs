@@ -2,7 +2,10 @@ use std::{
     fs,
     io::{prelude::*, BufReader}, 
     net::{TcpListener, TcpStream},
+    thread,
 };
+
+use prometheus_rust::ThreadPool;
 
 //#todo
 // Proper Eroor handling on all of the unwraps
@@ -21,7 +24,9 @@ fn main() {
             for stream in listener.incoming(){
                 let stream = stream.unwrap();
 
-                handle_connection(stream);
+                thread::spawn(|| {
+                    handle_connection(stream);
+                });
             }
         },
         Err(error) => println!("Failed to start server: {}", error),
