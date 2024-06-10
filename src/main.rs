@@ -2,7 +2,6 @@ use std::{
     fs,
     io::{prelude::*, BufReader}, 
     net::{TcpListener, TcpStream},
-    thread,
 };
 
 use prometheus_rust::ThreadPool;
@@ -16,6 +15,7 @@ use prometheus_rust::ThreadPool;
 
 fn main() {
     let result = TcpListener::bind("127.0.0.1:7878");
+    let pool = ThreadPool::build(4);
 
     match result {
         Ok(listener) => {
@@ -23,10 +23,14 @@ fn main() {
     
             for stream in listener.incoming(){
                 let stream = stream.unwrap();
+                
+                //the reason for a closure at this point is basically the same as for callback
+                //functions in javascript. "Run this function for each stream"
 
-                thread::spawn(|| {
-                    handle_connection(stream);
-                });
+                match pool {
+                    Ok(pool) => &pool.execute(|| handle_connection(stream)),
+                    Err(err) => println!("Error: {}", &err.message)
+                }
             }
         },
         Err(error) => println!("Failed to start server: {}", error),
