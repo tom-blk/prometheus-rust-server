@@ -27,10 +27,7 @@ fn main() {
                 //the reason for a closure at this point is basically the same as for callback
                 //functions in javascript. "Run this function for each stream"
 
-                match pool {
-                    Ok(pool) => &pool.execute(|| handle_connection(stream)),
-                    Err(err) => println!("Error: {}", &err.message)
-                }
+                pool.execute(|| handle_connection(stream))
             }
         },
         Err(error) => println!("Failed to start server: {}", error),
