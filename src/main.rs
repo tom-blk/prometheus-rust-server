@@ -1,14 +1,24 @@
 #![allow(unused)]
 
+pub use self::error::{Error, Result};
+
 use std::{fmt::format, net::SocketAddr};
 
 use axum::{extract::{Path, Query}, response::{Html, IntoResponse}, routing::{get, get_service}, Router};
 use serde::Deserialize;
 use tokio::net::TcpListener;
+use tower_http::services::ServeDir;
+
+
+mod error;
+mod web;
 
 #[tokio::main]
 async fn main() {
-    let routes_all = Router::new().merge(routes_all());
+    let routes_all = Router::new()
+        .merge(web::routes_login::routes())
+        .merge(routes_all())
+        .fallback_service(routes_static());
 
     // region: --- Start Server
 
