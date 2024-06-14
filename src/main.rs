@@ -1,59 +1,52 @@
-use std::{
-    fs,
-    io::{prelude::*, BufReader}, 
-    net::{TcpListener, TcpStream},
-};
+#![allow(unused)]
 
-use prometheus_rust::ThreadPool;
+use std::{fmt::format, net::SocketAddr};
 
-//#todo
-// Proper Eroor handling on all of the unwraps
-// jwt auth
-// different routes
-// database connection
-// logging
+use axum::{extract::{Path, Query}, response::{Html, IntoResponse}, routing::{get, get_service}, Router};
+use serde::Deserialize;
+use tokio::net::TcpListener;
 
-fn main() {
-    let result = TcpListener::bind("127.0.0.1:7878");
-    let pool = ThreadPool::build(4);
+#[tokio::main]
+async fn main() {
+    let routes_all = Router::new().merge(routes_all());
 
-    match result {
-        Ok(listener) => {
-            println!("Server started on 127.0.0.1:7878");
-    
-            for stream in listener.incoming().take(2) {
-                let stream = stream.unwrap();
-                
-                //the reason for a closure at this point is basically the same as for callback
-                //functions in javascript. "Run this function for each stream"
+    // region: --- Start Server
 
-                pool.execute(|| handle_connection(stream))
-            }
-        },
-        Err(error) => println!("Failed to start server: {}", error),
-    }
-    
+    let listener = TcpListener::bind("127.0.0.1:8080").await.unwrap();
+
+    println!("Listening on port {:?}\n", listener.local_addr());
+
+    axum::serve(listener, routes_all).await.unwrap();
+
 }
 
-fn handle_connection(mut stream: TcpStream) {
-    let buf_reader = BufReader::new(&mut stream);
-    let request_line = buf_reader
-            .lines()
-            .next()
-            .unwrap()
-            .unwrap();
+fn routes_static() -> Router {
+    Router::new().nest_service("/", get_service(ServeDir::new("./")))
+}
 
-    let (status_line, filename) = if request_line == "GET / HTTP/1.1" {
-        ("HTTP/1.1 200 OK", "hello.html")
-    } else {
-        ("HTTP/1.1 404 NOT FOUND", "404.html")  
-    };
+fn routes_all() -> Router {
+    Router::new()
+        .route("/hello", get(handler_hello))
+        .route("/hello2/:name_param", get(handler_hello2))
+}
 
-    let contents = fs::read_to_string(filename).unwrap();
-    let length = contents.len();
-    
-    let response = format!("{status_line}\r\nContent-Length: {length}\r\n\r\n{contents}");
+#[derive(Debug, Deserialize)]
+struct HelloParams{
+    name: Option<String>,
+}
 
-    stream.write_all(response.as_bytes()).unwrap();
+async fn handler_hello(Query(params): Query<HelloParams>) -> impl IntoResponse {
+    println!("->> {:<12} - handler_hello - {params:?}", "HANDLER");
+
+
+    let name = params.name.as_deref().unwrap_or("World");
+
+    Html(format!("Hello <strong>{name}</strong>"))
+}
+
+async fn handler_hello2(Path(name): Path<String>) -> impl IntoResponse {
+    println!("->> {:<12} - handler_hello2 - {name:?}", "HANDLER");
+
+    Html(format!("Hello <strong>{name}</strong>"))
 }
 
