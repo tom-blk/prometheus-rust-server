@@ -21,7 +21,7 @@ fn main() {
         Ok(listener) => {
             println!("Server started on 127.0.0.1:7878");
     
-            for stream in listener.incoming(){
+            for stream in listener.incoming().take(2) {
                 let stream = stream.unwrap();
                 
                 //the reason for a closure at this point is basically the same as for callback
