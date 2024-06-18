@@ -1,13 +1,14 @@
-use crate::{Error, Result};
+use crate::{web, Error, Result};
 use serde::Deserialize;
 use serde_json::{json, Value};
 use axum::{routing::post, Json, Router};
+use tower_cookies::{Cookies, Cookie};
 
 pub fn routes() -> Router {
     Router::new().route("/api/login", post(api_login))
 }
 
-async fn api_login(payload: Json<LoginPayload>) -> Result<Json<Value>> {
+async fn api_login(cookies: Cookies, payload: Json<LoginPayload>) -> Result<Json<Value>> {
     println!("->> {:<12} - api_login", "HANDLER");
 
     //TODO implement database authentication
@@ -16,7 +17,8 @@ async fn api_login(payload: Json<LoginPayload>) -> Result<Json<Value>> {
         return Err(Error::LoginFail);
     }
 
-    // TODO: Set JWt
+    //TODO Implement real auth token
+    cookies.add(Cookie::new(web::AUTH_TOKEN, "some-cookie"));
     
     let body = Json(json!({
         "result": {
