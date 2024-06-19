@@ -8,6 +8,7 @@ pub enum Error {
 
     // Auth Errors
     AuthFailNoAuthTokenCookie,
+    AuthFailTokenWrongFormat,
 
     // Model Errors => Refactor later to the appropriate places
     

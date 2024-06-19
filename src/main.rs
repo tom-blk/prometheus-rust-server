@@ -15,6 +15,7 @@ use web::mw_auth::mw_require_auth;
 mod error;
 mod model;
 mod web;
+mod ctx;
 
 #[tokio::main]
 async fn main() -> Result<()> {
