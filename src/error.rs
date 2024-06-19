@@ -2,13 +2,14 @@ use axum::{http::StatusCode, response::{IntoResponse, Response}};
 
 pub type Result<T> = core::result::Result<T, Error>;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Error {
     LoginFail,
 
     // Auth Errors
     AuthFailNoAuthTokenCookie,
     AuthFailTokenWrongFormat,
+    AuthFailCtxNotInRequestExt,
 
     // Model Errors => Refactor later to the appropriate places
     

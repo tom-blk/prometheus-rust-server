@@ -31,6 +31,7 @@ async fn main() -> Result<()> {
         .merge(routes_all()) //merge all the routes under the route the current router operates on
         .nest("/api", routes_api) //same as above, but nest the routes under /api
         .layer(middleware::map_response(main_response_mapper))
+        .layer(middleware::from_fn_with_state(mc.clone(),web::mw_auth::mw_ctx_resolver))
         .layer(CookieManagerLayer::new())
         .fallback_service(routes_static());
 
