@@ -13,12 +13,23 @@ async fn quick_dev() -> Result<()> {
     let req_login = hc.do_post(
         "/api/login",
         json!({
-            "username": "demo1",
+            "usrrname": "demo1",
             "pwd": "welcome"
         })
     );
 
-    req_login.await?.print().await?;
+    //req_login.await?.print().await?;
+
+    let req_create_ticket = hc.do_post(
+        "/api/tickets",
+        json!({
+            "title": "some title",
+        })
+    );
+
+    req_create_ticket.await?.print().await?;
+
+    hc.do_get("/api/tickets").await?.print().await?;
 
     Ok(())
 }

@@ -6,6 +6,8 @@ pub type Result<T> = core::result::Result<T, Error>;
 pub enum Error {
     LoginFail,
 
+    // Auth Errors
+    AuthFailNoAuthTokenCookie,
 
     // Model Errors => Refactor later to the appropriate places
     

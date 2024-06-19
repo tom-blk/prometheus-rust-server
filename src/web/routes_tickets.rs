@@ -1,4 +1,5 @@
 use axum::{extract::{Path, State}, routing::{delete, post}, Json, Router};
+use crate::Result;
 
 use crate::model::{ModelController, Ticket, TicketForCreate};
 
@@ -13,7 +14,7 @@ pub fn routes(mc: ModelController) -> Router {
 
 async fn create_ticket(
     State(mc): State<ModelController>,
-    Json(ticket_fc): TicketForCreate
+    Json(ticket_fc): Json<TicketForCreate>
 ) -> Result<Json<Ticket>> {
     println!("->> {:<12} - create_ticket", "HANDLER");
 
